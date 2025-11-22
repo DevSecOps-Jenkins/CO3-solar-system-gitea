@@ -12,5 +12,12 @@ pipeline {
         sh 'npm -v'
       }
     }
+
+    stage('Install Dependencies') {
+      steps {
+        sh 'echo Installing project dependencies...'
+        sh 'npm install --no-audit'
+      }
+    }
   }
 }
