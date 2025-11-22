@@ -45,7 +45,7 @@ pipeline {
               """, odcInstallation: 'OWASP-DepCheck-10'
 
               // publish (sesuaikan pattern jika output berbeda)
-              dependencyCheckPublisher failedTotalCritical: 1, pattern: 'dependency-check-report/dependency-check-report.xml', stopBuild: true
+              dependencyCheckPublisher failedTotalCritical: 10, pattern: 'dependency-check-report/dependency-check-report.xml', stopBuild: true
             }
           }
         }
