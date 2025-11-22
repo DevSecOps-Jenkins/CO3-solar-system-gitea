@@ -19,5 +19,34 @@ pipeline {
         sh 'npm install --no-audit'
       }
     }
+
+    stage('Dependency Scanning') {
+      parallel {
+        stage('npm-audit') {
+          steps {
+            echo 'Running npm audit (fail on critical)'
+            sh '''
+              npm audit --audit-level=critical
+              echo $?
+            '''
+          }
+        }
+        stage('OWASP-Dependency-Check') {
+          steps {
+            script {
+             sh '''
+              dependencyCheck additionalArguments: '''
+              --scan \'./\'
+              --out \'./\'
+              --format \'ALL\' 
+              --prettyPrint''', odcInstallation: 'OWASP-DepCheck-10'
+
+              dependencyCheckPublisher failedTotalCritical: 1, pattern: 'dependency-check-report.xml', stopBuild: true
+            '''
+            }
+          }
+        }
+      }
+    }
   }
 }
