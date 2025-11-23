@@ -5,6 +5,12 @@ pipeline {
     nodejs 'nodejs-22.6.0'
   }
 
+  environment {
+    // public/non-sensitive environment variable
+    MONGO_URI = "mongodb+srv://supercluster.d83jj.mongodb.net/superData"
+    // Note: username/password will be injected by withCredentials (do NOT put them here)
+  }
+
   stages {
     stage('Check Version') {
       steps {
@@ -16,7 +22,6 @@ pipeline {
     stage('Install Dependencies') {
       steps {
         sh 'echo Installing project dependencies...'
-        // gunakan --no-audit untuk menghindari audit otomatis saat install; kamu bisa remove jika ingin audit real-time
         sh 'npm install --no-audit'
       }
     }
@@ -26,7 +31,6 @@ pipeline {
         stage('npm-audit') {
           steps {
             echo 'Running npm audit (report but do not fail pipeline automatically)'
-            // jalankan audit, tampilkan output; gunakan || true agar build lanjut (jika ingin fail on critical, hapus || true)
             sh '''
               npm audit --audit-level=critical || true
             '''
@@ -36,7 +40,6 @@ pipeline {
         stage('OWASP-Dependency-Check') {
           steps {
             script {
-              // Jalankan Dependency-Check CLI via plugin (pastikan tool terdaftar sebagai OWASP-DepCheck-10)
               dependencyCheck additionalArguments: """
                 --scan './'
                 --out './dependency-check-report'
@@ -46,10 +49,8 @@ pipeline {
                 --disableKnownExploited
               """, odcInstallation: 'OWASP-DepCheck-10'
 
-              // publish XML results and fail build jika kritikal melebihi threshold
               dependencyCheckPublisher failedTotalCritical: 10, pattern: 'dependency-check-report/dependency-check-report.xml', stopBuild: true
 
-              // publish HTML report ke Jenkins (sesuaikan reportDir jika HTML ada di subfolder)
               publishHTML ([
                 allowMissing: true,
                 alwaysLinkToLastBuild: true,
@@ -60,20 +61,34 @@ pipeline {
                 reportTitles: '',
                 useWrapperFileDirectly: true
               ])
-
-              // publish JUnit report (dependency-check dapat menghasilkan JUnit XML)
-              // allowEmptyResults: true -> agar tidak gagal jika file tidak ada
-              junit allowEmptyResults: true, keepLongStdio: true, testResults: 'dependency-check-report/dependency-check-junit.xml'
             }
           }
         } // end OWASP-Dependency-Check
       } // end parallel
     } // end Dependency Scanning
+
+    stage('Unit Tests') {
+      steps {
+        script {
+          // inject username/password from Jenkins Credential store
+          withCredentials([usernamePassword(credentialsId: 'mongo-db-credentials', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) {
+            // show non-sensitive debug info
+            echo "MONGO_URI = ${env.MONGO_URI}"
+            echo "MONGO_USERNAME = ${env.MONGO_USERNAME}"
+            // run unit tests (ensure your tests read MONGO_* env vars)
+            sh 'npm test'
+            // publish JUnit results (adjust path if your test runner writes elsewhere)
+            junit allowEmptyResults: true, keepLongStdio: true, testResults: 'test-results/**/*.xml'
+          }
+        }
+      }
+    } // end Unit Tests
+
   } // end stages
 
   post {
     always {
-      archiveArtifacts artifacts: 'dependency-check-report/**', onlyIfSuccessful: false
+      archiveArtifacts artifacts: 'dependency-check-report/**, test-results/**', onlyIfSuccessful: false
       echo 'Build finished - artifacts archived (if any).'
     }
   }
