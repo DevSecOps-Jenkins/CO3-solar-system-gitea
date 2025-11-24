@@ -1,5 +1,4 @@
 let mongoose = require("mongoose");
-let server = require("./app");
 let chai = require("chai");
 let chaiHttp = require("chai-http");
 
@@ -7,6 +6,17 @@ let chaiHttp = require("chai-http");
 // Assertion 
 chai.should();
 chai.use(chaiHttp); 
+
+before(() => {
+  sinon.stub(mongoose, 'connect').callsFake(() => Promise.resolve());
+});
+
+after(() => {
+  mongoose.connect.restore();
+});
+
+let server = require('./app');
+
 
 describe('Planets API Suite', () => {
 
