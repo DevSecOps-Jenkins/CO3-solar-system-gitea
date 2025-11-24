@@ -1,4 +1,10 @@
 pipeline {
+
+  options {
+    disableResume()
+    disableConcurrentBuilds abortPrevious: true
+  }
+
   agent any
 
   tools {
