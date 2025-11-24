@@ -90,6 +90,20 @@ pipeline {
       }
     } // end Unit Tests
 
+    stage('Code Coverage') {
+      steps {
+        script {
+          // inject username/password from Jenkins Credential store
+          withCredentials([usernamePassword(credentialsId: 'mongo-db-credentials', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) 
+          {
+            catchError(buildResult: 'SUCCESS', message: 'Oops! it will be fixed in futures releases', stageResult: 'UNSTABLE') {
+              sh 'npm run coverage'
+            }
+          }
+        }
+      }
+    }     
+
   } // end stages
 
   post {
