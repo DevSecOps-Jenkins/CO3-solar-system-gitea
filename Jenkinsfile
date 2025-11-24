@@ -100,6 +100,16 @@ pipeline {
               sh 'npm run coverage'
             }
           }
+          publishHTML ([
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'coverage/lcov-report',
+                reportFiles: 'index.html',
+                reportName: 'Code Coverage HTML Report',
+                reportTitles: '',
+                useWrapperFileDirectly: true
+            ])
         }
       }
     }     
@@ -108,7 +118,7 @@ pipeline {
 
   post {
     always {
-      archiveArtifacts artifacts: 'dependency-check-report/**, test-results/**', onlyIfSuccessful: false
+      archiveArtifacts artifacts: 'dependency-check-report/**, test-results/**, coverage/lcov-report/**', onlyIfSuccessful: false
       echo 'Build finished - artifacts archived (if any).'
     }
   }
