@@ -26,6 +26,7 @@
   "devDependencies": {
     "chai": "*",
     "chai-http": "*",
-    "mocha": "*"
+    "mocha": "*",
+    "sinon": "^21.0.0"
   }
 }
