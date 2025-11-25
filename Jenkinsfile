@@ -14,10 +14,15 @@ pipeline {
   environment {
     // public/non-sensitive environment variable
     MONGO_URI = "mongodb+srv://supercluster.d83jj.mongodb.net/superData"
-    // Note: username/password will be injected by withCredentials (do NOT put them here)
+
+    // credentials moved here
+    MONGO_DB_CREDS    = credentials('mongo-db-credentials')
+    MONGO_DB_USERNAME = credentials('mongo-db-username')
+    MONGO_DB_PASSWORD = credentials('mongo-db-password')
   }
 
   stages {
+
     stage('Check Version') {
       steps {
         sh 'node -v'
@@ -27,16 +32,15 @@ pipeline {
 
     stage('Install Dependencies') {
       steps {
-        sh 'echo Installing project dependencies...'
         sh 'npm install --no-audit'
       }
     }
 
     stage('Dependency Scanning') {
       parallel {
+
         stage('npm-audit') {
           steps {
-            echo 'Running npm audit (report but do not fail pipeline automatically)'
             sh '''
               npm audit --audit-level=critical || true
             '''
@@ -56,70 +60,65 @@ pipeline {
               """, odcInstallation: 'OWASP-DepCheck-10'
 
               dependencyCheckPublisher failedTotalCritical: 10, pattern: 'dependency-check-report/dependency-check-report.xml', stopBuild: true
-
-              publishHTML ([
-                allowMissing: true,
-                alwaysLinkToLastBuild: true,
-                keepAll: true,
-                reportDir: 'dependency-check-report',
-                reportFiles: 'dependency-check-jenkins.html',
-                reportName: 'Dependency Check HTML Report',
-                reportTitles: '',
-                useWrapperFileDirectly: true
-              ])
             }
           }
-        } // end OWASP-Dependency-Check
-      } // end parallel
-    } // end Dependency Scanning
+        }
+
+      } // parallel
+    } // Dependency Scanning
 
     stage('Unit Tests') {
       steps {
         script {
-          // inject username/password from Jenkins Credential store
-          withCredentials([usernamePassword(credentialsId: 'mongo-db-credentials', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) {
-            // show non-sensitive debug info
-            echo "MONGO_URI = ${env.MONGO_URI}"
-            echo "MONGO_USERNAME = ${env.MONGO_USERNAME}"
-            // run unit tests (ensure your tests read MONGO_* env vars)
-            sh 'npm test'
-            // publish JUnit results (adjust path if your test runner writes elsewhere)
-            junit allowEmptyResults: true, keepLongStdio: true, testResults: 'test-results/**/*.xml'
-          }
+          echo "MONGO_URI: ${env.MONGO_URI}"
+          echo "MONGO_DB_USERNAME: ${env.MONGO_DB_USERNAME}"
+
+          sh 'npm test'
         }
       }
-    } // end Unit Tests
+    }
 
     stage('Code Coverage') {
       steps {
         script {
-          // inject username/password from Jenkins Credential store
-          withCredentials([usernamePassword(credentialsId: 'mongo-db-credentials', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) 
-          {
-            catchError(buildResult: 'SUCCESS', message: 'Oops! it will be fixed in futures releases', stageResult: 'UNSTABLE') {
-              sh 'npm run coverage'
-            }
+          catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Oops! it will be fixed in future releases') {
+            sh 'npm run coverage'
           }
-          publishHTML ([
-                allowMissing: true,
-                alwaysLinkToLastBuild: true,
-                keepAll: true,
-                reportDir: 'coverage/lcov-report',
-                reportFiles: 'index.html',
-                reportName: 'Code Coverage HTML Report',
-                reportTitles: '',
-                useWrapperFileDirectly: true
-            ])
         }
       }
-    }     
+    }
 
-  } // end stages
+  } // stages
 
   post {
     always {
+
+      // JUnit test results
+      junit allowEmptyResults: true, keepLongStdio: true, testResults: 'test-results/**/*.xml'
+      junit allowEmptyResults: true, keepLongStdio: true, testResults: 'dependency-check-report/**/*.xml'
+
+      // HTML Reports
+      publishHTML ([
+        allowMissing: true,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: 'dependency-check-report',
+        reportFiles: 'dependency-check-jenkins.html',
+        reportName: 'Dependency Check HTML Report'
+      ])
+
+      publishHTML ([
+        allowMissing: true,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: 'coverage/lcov-report',
+        reportFiles: 'index.html',
+        reportName: 'Code Coverage HTML Report'
+      ])
+
       archiveArtifacts artifacts: 'dependency-check-report/**, test-results/**, coverage/lcov-report/**', onlyIfSuccessful: false
-      echo 'Build finished - artifacts archived (if any).'
+
+      echo 'Build finished — reports published & artifacts archived.'
     }
   }
 }
