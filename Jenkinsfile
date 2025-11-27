@@ -99,6 +99,7 @@ pipeline {
             -Dsonar.sources=. \
             -Dsonar.host.url=http://192.168.88.20:9000 \
             -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info \
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/*.map,**/*.min.js \
             -Dsonar.token=sqp_191cb0cf312f824662d38da73851ae603f041ebf
         '''
       }
