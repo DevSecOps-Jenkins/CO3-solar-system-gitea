@@ -108,6 +108,13 @@ pipeline {
       }
     }
 
+    stage('Build Docker Image') {
+      steps {
+        sh 'printenv'
+        sh 'docker build -t airist/solar-system:$GIT_COMMIT .'
+      }
+    }
+
   } // stages
 
   post {
