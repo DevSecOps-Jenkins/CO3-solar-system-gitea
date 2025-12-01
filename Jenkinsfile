@@ -118,24 +118,26 @@ pipeline {
     stage('Trivy Vulnerability Scan') {
       steps {
         sh '''
+           mkdir -p trivy-report
+
            trivy image airist/solar-system:$GIT_COMMIT \
               --severity LOW,MEDIUM,HIGH \
               --exit-code 0 \
               --quiet \
-              --format json -o trivy-image-MEDIUM-results.json
+              --format json -o ./trivy-report/trivy-image-MEDIUM-results.json
 
            trivy image airist/solar-system:$GIT_COMMIT \
               --severity CRITICAL \
               --exit-code 0 \
               --quiet \
-              --format json -o trivy-image-CRITICAL-results.json
+              --format json -o ./trivy-report/trivy-image-CRITICAL-results.json
         '''
       }
      post {
       always {
         sh '''
           mkdir -p trivy-report
-          
+
           trivy convert \
               --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
               --output ./trivy-report/trivy-image-MEDIUM-results.html ./trivy-report/trivy-image-MEDIUM-results.json
