@@ -122,13 +122,13 @@ pipeline {
               --severity LOW,MEDIUM,HIGH \
               --exit-code 0 \
               --quiet \
-              --format-json -o trivy-image-MEDIUM-results.json
+              --format json -o trivy-image-MEDIUM-results.json
 
            trivy image airist/solar-system:$GIT_COMMIT \
               --severity CRITICAL \
               --exit-code 0 \
               --quiet \
-              --format-json -o trivy-image-CRITICAL-results.json
+              --format json -o trivy-image-CRITICAL-results.json
         '''
       }
      post {
