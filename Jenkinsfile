@@ -115,6 +115,45 @@ pipeline {
       }
     }
 
+    stage('Build Docker Image') {
+      steps {
+        sh '''
+           trivy image airist/solar-system:$GIT_COMMIT \
+              --severity LOW,MEDIUM,HIGH \
+              --exit-code 0 \
+              --quiet \
+              --format-json -o trivy-image-MEDIUM-results.json
+
+           trivy image airist/solar-system:$GIT_COMMIT \
+              --severity CRITICAL \
+              --exit-code 0 \
+              --quiet \
+              --format-json -o trivy-image-CRITICAL-results.json
+        '''
+      }
+     post {
+      always {
+        sh '''
+          trivy convert \
+              --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
+              --output ./trivy-report/trivy-image-MEDIUM-results.html ./trivy-report/trivy-image-MEDIUM-results.json
+
+          trivy convert \
+              --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
+              --output ./trivy-report/trivy-image-CRITICAL-results.html ./trivy-report/trivy-image-CRITICAL-results.json
+
+          trivy convert \
+              --format template --template "@/usr/local/share/trivy/templates/junit.tpl" \
+              --output ./trivy-report/trivy-image-CRITICAL-results.xml ./trivy-report/trivy-image-CRITICAL-results.json
+          
+          trivy convert \
+              --format template --template "@/usr/local/share/trivy/templates/junit.tpl" \
+              --output ./trivy-report/trivy-image-CRITICAL-results.xml ./trivy-report/trivy-image-CRITICAL-results.json
+        '''
+      }
+     }
+    }
+
   } // stages
 
   post {
@@ -141,6 +180,25 @@ pipeline {
         reportDir: 'coverage/lcov-report',
         reportFiles: 'index.html',
         reportName: 'Code Coverage HTML Report'
+      ])
+
+      // HTML Reports
+      publishHTML ([
+        allowMissing: true,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: 'trivy-report',
+        reportFiles: 'trivy-image-MEDIUM-results.html',
+        reportName: 'Trivy Image Medium Vul Report'
+      ])
+
+      publishHTML ([
+        allowMissing: true,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: 'trivy-report',
+        reportFiles: 'trivy-image-CRITICAL-results.html',
+        reportName: 'Trivy Image Critical Vul Report'
       ])
 
       archiveArtifacts artifacts: 'dependency-check-report/**, test-results/**, coverage/lcov-report/**', onlyIfSuccessful: false
