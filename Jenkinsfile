@@ -115,7 +115,7 @@ pipeline {
       }
     }
 
-    stage('Build Docker Image') {
+    stage('Trivy Vulnerability Scan') {
       steps {
         sh '''
            trivy image airist/solar-system:$GIT_COMMIT \
