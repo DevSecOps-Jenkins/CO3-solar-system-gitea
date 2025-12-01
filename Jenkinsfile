@@ -158,6 +158,14 @@ pipeline {
      }
     }
 
+    stage('Push Docker Image') {
+      steps {
+        withDockerRegistry(credentialsId: 'docker-hub-credentials', url: "") {
+          sh 'docker push airist/solar-system:$GIT_COMMIT'
+        }
+      }
+    }
+
   } // stages
 
   post {
