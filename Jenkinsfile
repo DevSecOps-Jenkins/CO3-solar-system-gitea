@@ -134,6 +134,8 @@ pipeline {
      post {
       always {
         sh '''
+          mkdir -p trivy-report
+          
           trivy convert \
               --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
               --output ./trivy-report/trivy-image-MEDIUM-results.html ./trivy-report/trivy-image-MEDIUM-results.json
