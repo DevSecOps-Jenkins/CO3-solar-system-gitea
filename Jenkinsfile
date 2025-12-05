@@ -217,7 +217,7 @@ pipeline {
           sh '''
               #### Replace Docker Tag ####
               git checkout staging
-              sed -i "s#airist. *#airist/solar-system: $GIT_COMMIT#g" deployment.yml 
+              sed -i "s#airist.*#airist/solar-system:$GIT_COMMIT#g" deployment.yml 
               cat deployment.yml
 
               #### Commit and Push to Feature Branch ####
