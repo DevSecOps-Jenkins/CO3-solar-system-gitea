@@ -20,7 +20,8 @@ pipeline {
     MONGO_DB_USERNAME = credentials('mongo-db-username')
     MONGO_DB_PASSWORD = credentials('mongo-db-password')
     SONAR_SCANNER_HOME = tool 'sonarqube-scanner-6.10';
-    SONAR_SCANNER_OPTS= "-Xmx2048m -Xms512m"
+    SONAR_SCANNER_OPTS = "-Xmx2048m -Xms512m"
+    GITHUB_TOKEN = credentials('github-pat-token')
   }
 
   stages {
