@@ -206,10 +206,41 @@ pipeline {
       }
     }
 
+    stage('Kuberenetes Update Image - Deploy to Staging') {
+      when {
+        branch 'staging'
+      }
+      steps {
+        sh 'git clone -b main https://github.com/DevSecOps-Jenkins/CO3-solar-system-gitea-deployment.git'
+        dir("CO3-solar-system-gitea-deployment/kubernetes") {
+          sh '''
+              #### Replace Docker Tag ####
+              git checkout staging
+              sed -i "s#airist. *#airist/solar-system: $GIT_COMMIT#g" deployment.yml 
+              cat deployment.yml
+
+              #### Commit and Push to Feature Branch ####
+              git config --global user.email "jenkins@dasher.com"
+              git remote set-url origin https://$GITHUB_TOKEN@github.com/DevSecOps-Jenkins/CO3-solar-system-gitea-deployment.git 
+              git add .
+              git commit -am "Updated docker image"
+              git push -u origin staging
+          '''
+        }
+      }
+    }
+
   } // stages
 
   post {
     always {
+
+      // Delete Folder Deployment
+      script {
+        if (fileExists('CO3-solar-system-gitea-deployment')){
+          sh 'rm -rf CO3-solar-system-gitea-deployment'
+        }
+      }
 
       // JUnit test results
       junit allowEmptyResults: true, keepLongStdio: true, testResults: 'test-results/**/*.xml'
