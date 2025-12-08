@@ -231,6 +231,40 @@ pipeline {
       }
     }
 
+    stage('App Deployed') {
+      when {
+        branch 'staging'
+      }
+      steps {
+        timeout(time: 1, unit: 'DAYS'){
+          input {
+            message: 'Is the Application:Solar Sytem Deployed?', ok: 'Yes Application Solar System is Deployed.'
+          }
+        }
+      }
+    }
+
+    stage('DAST - OWASP ZAP') {
+      when {
+        branch 'staging'
+      }
+      steps {
+        sh '''
+          #### REPLACE below with Kubernetes http://IP_Address: 30000/api-docs/  
+          mkdir -p $(pwd)/dast-report
+          cd $(pwd)/dast-report
+          chmod 777 $(pwd)
+          docker run -v $(pwd):/zap/wrk/: rw ghcr.io/zaproxy/zaproxy zap-api-scan.py \
+          -t http://192.168.88.25:30000/api-docs \
+          -f openapi \
+          -r zap_report.html\
+          -w zap_report.md \
+          -J zap_json_report.json \
+          -x zap_xml_report.xml
+        '''
+      }
+    }
+
   } // stages
 
   post {
