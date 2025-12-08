@@ -252,7 +252,7 @@ pipeline {
           mkdir -p $(pwd)/dast-report
           cd $(pwd)/dast-report
           chmod 777 $(pwd)
-          docker run -v $(pwd):/zap/wrk/: rw ghcr.io/zaproxy/zaproxy zap-api-scan.py \
+          docker run -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy zap-api-scan.py \
           -t http://192.168.88.25:30000/api-docs \
           -f openapi \
           -r zap_report.html\
