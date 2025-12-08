@@ -237,9 +237,7 @@ pipeline {
       }
       steps {
         timeout(time: 1, unit: 'DAYS'){
-          input {
-            message: 'Is the Application:Solar Sytem Deployed?', ok: 'Yes Application Solar System is Deployed.'
-          }
+          input message: 'Is the Application:Solar Sytem Deployed?', ok: 'Yes Application Solar System is Deployed.'
         }
       }
     }
