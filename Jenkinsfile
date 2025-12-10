@@ -258,7 +258,8 @@ pipeline {
           -r zap_report.html\
           -w zap_report.md \
           -J zap_json_report.json \
-          -x zap_xml_report.xml
+          -x zap_xml_report.xml \
+          -c zap_ignore_rules
         '''
       }
     }
@@ -278,6 +279,16 @@ pipeline {
       // JUnit test results
       junit allowEmptyResults: true, keepLongStdio: true, testResults: 'test-results/**/*.xml'
       junit allowEmptyResults: true, keepLongStdio: true, testResults: 'dependency-check-report/**/*.xml'
+
+      // HTML Reports
+      publishHTML ([
+        allowMissing: true,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: 'dast-report',
+        reportFiles: 'zap_report.html',
+        reportName: 'DAST - OWASP ZAP Report'
+      ])
 
       // HTML Reports
       publishHTML ([
