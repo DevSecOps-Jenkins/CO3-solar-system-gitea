@@ -1,1 +1,8 @@
 10021	IGNORE	^https?://192\.168\.88\.25:30000/.*$
+10020	INFO	^https?://192\.168\.88\.25:30000/.*$     # Missing Anti-clickjacking Header
+10037	INFO	^https?://192\.168\.88\.25:30000/.*$     # X-Powered-By leaks
+10038	INFO	^https?://192\.168\.88\.25:30000/.*$     # CSP not set
+10063	INFO	^https?://192\.168\.88\.25:30000/.*$     # Permissions Policy
+10098	INFO	^https?://192\.168\.88\.25:30000/.*$     # Cross-Domain Misconfig
+90003	INFO	^https?://192\.168\.88\.25:30000/.*$     # SRI missing
+90004	INFO	^https?://192\.168\.88\.25:30000/.*$     # Spectre site isolation
