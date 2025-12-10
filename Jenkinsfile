@@ -250,7 +250,7 @@ pipeline {
         sh '''
           #### REPLACE below with Kubernetes http://IP_Address: 30000/api-docs/  
           mkdir -p $(pwd)/dast-report
-          chmod 777 $(pwd)
+          chmod 777 $(pwd)/dast-report
           docker run \
             -v $(pwd)/dast-report:/zap/wrk/:rw \
             -v $(pwd)/zap_ignore_rules:/zap/zap_ignore_rules:ro \
