@@ -250,7 +250,6 @@ pipeline {
         sh '''
           #### REPLACE below with Kubernetes http://IP_Address: 30000/api-docs/  
           mkdir -p $(pwd)/dast-report
-          cd $(pwd)/dast-report
           chmod 777 $(pwd)
           docker run \
             -v $(pwd)/dast-report:/zap/wrk/:rw \
@@ -258,10 +257,10 @@ pipeline {
             ghcr.io/zaproxy/zaproxy zap-api-scan.py \
             -t http://192.168.88.25:30000/api-docs \
             -f openapi \
-            -r zap_report.html \
-            -w zap_report.md \
-            -J zap_json_report.json \
-            -x zap_xml_report.xml \
+            -r dast-report/zap_report.html \
+            -w dast-report/zap_report.md \
+            -J dast-report/zap_json_report.json \
+            -x dast-report/zap_xml_report.xml \
             -c /zap/zap_ignore_rules
         '''
       }
