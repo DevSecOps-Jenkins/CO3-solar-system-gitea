@@ -257,10 +257,10 @@ pipeline {
             ghcr.io/zaproxy/zaproxy zap-api-scan.py \
             -t http://192.168.88.25:30000/api-docs \
             -f openapi \
-            -r dast-report/zap_report.html \
-            -w dast-report/zap_report.md \
-            -J dast-report/zap_json_report.json \
-            -x dast-report/zap_xml_report.xml \
+            -r zap_report.html \
+            -w zap_report.md \
+            -J zap_json_report.json \
+            -x zap_xml_report.xml \
             -c /zap/zap_ignore_rules
         '''
       }
