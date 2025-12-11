@@ -248,7 +248,7 @@ pipeline {
       }
       steps {
         sh '''
-          #### REPLACE below with Kubernetes http://IP_Address: 30000/api-docs/  
+          #### REPLACE below with Kubernetes http://IP_Address:30000/api-docs/  
           mkdir -p $(pwd)/dast-report
           chmod 777 $(pwd)/dast-report
           docker run \
@@ -264,6 +264,30 @@ pipeline {
             -c /zap/zap_ignore_rules \
             -I
         '''
+      }
+    }
+
+    stage('Upload - AWS S3') {
+      when {
+        branch 'staging'
+      }
+      steps {
+        withAWS(credentials: 'aws-ec2-lambda-creds', region: 'us-east-1') {
+          sh '''
+              ls -ltr
+              mkdir reports-$BUILD-ID
+              cp -rf coverage/ reports-$BUILD-ID/
+              cp -rf dast-report/ reports-$BUILD-ID/
+              cp -rf dependency-check-report/ reports-$BUILD-ID/
+              cp -rf trivy-report/ reports-$BUILD-ID/
+              ls -ltr reports-$BUILD-ID/
+          '''
+          s3Upload(
+              file:"reports-$BUILD-ID",
+              bucket: 'airis-project-jenkins-reports-bucket'
+              path:"jenkins-$BUILD-ID"
+          )
+        }
       }
     }
 
