@@ -283,9 +283,9 @@ pipeline {
               ls -ltr reports-$BUILD-ID/
           '''
           s3Upload(
-              file:"reports-$BUILD-ID",
-              bucket: 'airis-project-jenkins-reports-bucket'
-              path:"jenkins-$BUILD-ID"
+              file: "reports-$BUILD-ID",
+              bucket: 'airis-project-jenkins-reports-bucket',
+              path: "jenkins-$BUILD-ID"
           )
         }
       }
