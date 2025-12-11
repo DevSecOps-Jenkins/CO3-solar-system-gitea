@@ -275,17 +275,17 @@ pipeline {
         withAWS(credentials: 'aws-ec2-lambda-creds', region: 'us-east-1') {
           sh '''
               ls -ltr
-              mkdir reports-$BUILD-ID
-              cp -rf coverage/ reports-$BUILD-ID/
-              cp -rf dast-report/ reports-$BUILD-ID/
-              cp -rf dependency-check-report/ reports-$BUILD-ID/
-              cp -rf trivy-report/ reports-$BUILD-ID/
-              ls -ltr reports-$BUILD-ID/
+              mkdir reports-$BUILD_ID
+              cp -rf coverage/ reports-$BUILD_ID/
+              cp -rf dast-report/ reports-$BUILD_ID/
+              cp -rf dependency-check-report/ reports-$BUILD_ID/
+              cp -rf trivy-report/ reports-$BUILD_ID/
+              ls -ltr reports-$BUILD_ID/
           '''
           s3Upload(
-              file: "reports-$BUILD-ID",
+              file: "reports-$BUILD_ID",
               bucket: 'airis-project-jenkins-reports-bucket',
-              path: "jenkins-$BUILD-ID"
+              path: "jenkins-$BUILD_ID"
           )
         }
       }
