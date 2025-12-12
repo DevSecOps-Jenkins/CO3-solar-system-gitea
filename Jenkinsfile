@@ -291,6 +291,17 @@ pipeline {
       }
     }
 
+    stage('Deploy to Production ?') {
+      when {
+        branch 'main'
+      }
+      steps {
+        timeout(time: 1, unit: 'DAYS'){
+          input message: 'Deploy to Production?', ok: 'Yes Application Solar System is Deployed.', submitter: 'admin'
+        }
+      }
+    }
+
   } // stages
 
   post {
